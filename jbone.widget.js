@@ -9,11 +9,10 @@
 
 (function($) {
     var _id = 0,
-        widgets = {};
+        _widgets = {};
 
     $.Widget = function(name, el, base) {
         this.id = _id++;
-        this.name = name;
         this.el = el;
         this.$el = $(el);
         this._elements = [];
@@ -58,19 +57,19 @@
 
     $.widget = function(name, base, protoProps) {
         if (protoProps) {
-            base = widgets[base];
+            base = _widgets[base];
         } else {
             protoProps = base;
             base = undefined;
         }
 
-        widgets[name] = $.extend({}, base, protoProps);
+        _widgets[name] = $.extend({}, base, protoProps);
 
         return $.fn[name] = function(options) {
             var i = 0,
                 length = this.length,
                 args = arguments,
-                method, createWidget, runMethod;
+                action, createWidget, callMethod;
 
             createWidget = function(el) {
                 var widget;
@@ -80,7 +79,7 @@
                 }
 
                 widget = new $.Widget(name, el, base);
-                $.extend(widget, widgets[name]);
+                $.extend(widget, _widgets[name]);
                 widget.options = typeof widget.options === "function" ? widget.options() : widget.options;
                 $.extend(widget.options, options);
                 widget.init(widget.options);
@@ -89,7 +88,7 @@
                 el.widgets[name] = widget;
             };
 
-            runMethod = function(el) {
+            callMethod = function(el) {
                 if (!el.widgets || !el.widgets[name]) {
                     throw new Error("cannot call methods on " + name + " prior to initialization; attempted to call method " + options);
                 }
@@ -101,17 +100,14 @@
                 }
             };
 
-            // run widget method
-            if (args.length > 0 && typeof options === "string") {
-                method = runMethod;
-            }
-            // create new widget
-            else {
-                method = createWidget;
+            if (typeof options === "string") {
+                action = callMethod;
+            } else {
+                action = createWidget;
             }
 
             for (; i < length; i++) {
-                method(this[i]);
+                action(this[i]);
             }
 
             return this;
