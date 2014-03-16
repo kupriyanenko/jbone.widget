@@ -1,0 +1,35 @@
+{
+  "name": "jBone.widget",
+  "version": "0.0.1",
+  "description": "Widget factory for jBone",
+  "main": "jbone.widget.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "grunt test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/kupriyanenko/jbone.widget.git"
+  },
+  "keywords": [
+    "jbone",
+    "jbone.widget",
+    "widgets",
+    "widget",
+    "factory"
+  ],
+  "author": "Alexey Kupriyanenko <a.kupriyanenko@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/kupriyanenko/jbone.widget/issues"
+  },
+  "homepage": "https://github.com/kupriyanenko/jbone.widget",
+  "devDependencies": {
+    "grunt-contrib-watch": "^0.6.0",
+    "grunt": "^0.4.4",
+    "grunt-contrib-jshint": "^0.9.2",
+    "grunt-mocha": "^0.4.10"
+  }
+}

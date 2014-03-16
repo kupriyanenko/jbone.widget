@@ -1,0 +1,30 @@
+{
+  "name": "jBone.widget",
+  "main": "jbone.widget.js",
+  "version": "0.0.1",
+  "homepage": "https://github.com/kupriyanenko/jbone.widget",
+  "authors": [
+    "kupriyanenko <a.kupriyanenko@gmail.com>"
+  ],
+  "description": "Widget factory for jBone",
+  "keywords": [
+    "jbone",
+    "jbone.widget",
+    "widgets",
+    "widget",
+    "factory"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "devDependencies": {
+    "chai": "~1.9.0",
+    "jbone": "~1.0.7",
+    "mocha": "~1.18.0"
+  }
+}
