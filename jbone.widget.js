@@ -12,10 +12,12 @@
         _widgets = {};
 
     $.Widget = function(name, el, base) {
-        this.id = _id++;
+        this.id = '.widget' + _id++;
+        this.name = name;
         this.el = el;
         this.$el = $(el);
         this._elements = [];
+        this.options = {};
 
         // add reference to the parent class
         if (base) {
@@ -25,33 +27,80 @@
 
     $.Widget.prototype = {
         init: function() {
-            this.render();
+            return this.render();
         },
 
         render: function() {
             return this;
         },
 
-        on: function($el, options) {
-            var callback, eventType;
-
-            for (eventType in options) {
-                this._elements.push($el);
-                $el.on(eventType + ".widget" + this.id, options[eventType]);
+        /**
+         * Gets and Sets an object containing key/value representing the current widget options hash
+         * @param {String|Object} String - key for get value or for set key. Object - for set keys/values
+         * @param {?=}  Optional argument for set value
+         * @return {?=} Optional return value from key
+         */
+        option: function() {
+            var one = arguments.length === 1;
+            if (one && typeof arguments[0] === 'string') {
+                return this.options[arguments[0]];
             }
+
+            if (one) {
+                $.extend(this.options, arguments[0]);
+            } else {
+                this.options[arguments[0]] = arguments[1];
+            }
+
+            return this;
+        },
+
+        setMethod: function(methodName, fn) {
+            this[methodName] = fn;
+        },
+        
+        on: function($el, options, context) {
+            var str,
+                eventType;
+
+            this._elements.push($el);
+
+            if (typeof options === 'string') {
+                $el.on.call($el, options += this.id, context);
+
+                return this;
+            }
+
+            for (str in options) {
+                eventType = str.split(/\s+/);
+                eventType.push(options[str].bind(context));
+                eventType[0] += this.id;
+
+                $el.on.apply($el, eventType);
+            }
+
+            return this;
         },
 
         off: function($el, eventType, fn) {
-            $el.off(eventType || "" + ".widget" + this.id, fn);
+            $el.off((eventType || '') + this.id, fn);
+
+            return this;
         },
 
         destroy: function() {
             for (var i in this._elements) {
-                this._elements[i].off(".widget" + this.id);
+                this._elements[i].off(this.id);
             }
 
             this._elements = [];
-            delete this.el.widget;
+            this.$el.removeData(this.name);
+            delete this.el.widgets[this.name];
+            if (!this.el.widgets.length) {
+                delete this.el.widgets;
+            }
+
+            return this;
         }
     };
 
@@ -69,7 +118,7 @@
             var i = 0,
                 length = this.length,
                 args = arguments,
-                action, createWidget, callMethod;
+                action, createWidget, runMethod, result;
 
             createWidget = function(el) {
                 var widget;
@@ -78,36 +127,41 @@
                     return;
                 }
 
+                options = typeof options === 'function' ? options() : options;
                 widget = new $.Widget(name, el, base);
                 $.extend(widget, _widgets[name]);
-                widget.options = typeof widget.options === "function" ? widget.options() : widget.options;
-                $.extend(widget.options, options);
-                widget.init(widget.options);
+                widget.options = $.extend({}, _widgets[name].options, options);
+                widget.init(options);
 
+                widget.$el.data(name, widget);
                 el.widgets = el.widgets || {};
                 el.widgets[name] = widget;
             };
 
-            callMethod = function(el) {
+            runMethod = function(el) {
                 if (!el.widgets || !el.widgets[name]) {
-                    throw new Error("cannot call methods on " + name + " prior to initialization; attempted to call method " + options);
+                    throw new Error('cannot call methods on ' + name + ' prior to initialization; attempted to call method ' + options);
                 }
 
-                try {
-                    el.widgets[name][options].apply(el.widgets[name], [].slice.call(args, 1));
-                } catch (error) {
-                    throw new Error("no such method " + options + " for " + name + " widget instance");
+                if (!el.widgets[name][options]) {
+                    throw new Error('no such method ' + options + ' for ' + name + ' widget instance');
+                } else {
+                    return el.widgets[name][options].apply(el.widgets[name], [].slice.call(args, 1));
                 }
             };
 
-            if (typeof options === "string") {
-                action = callMethod;
+            if (typeof options === 'string') {
+                action = runMethod;
             } else {
                 action = createWidget;
             }
 
             for (; i < length; i++) {
-                action(this[i]);
+                result = action(this[i]);
+            }
+
+            if (options === 'option') {
+                return result;
             }
 
             return this;

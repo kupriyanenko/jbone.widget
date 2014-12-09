@@ -10,7 +10,7 @@
   "smarttabs": true,
   "trailing": true,
   "undef": false,
-  "quotmark": "double",
+  "quotmark": "single",
   "unused": false,
   "browser": true
 }
